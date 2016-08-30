@@ -64,7 +64,7 @@ object VerticalBoxBlur {
     val size = width / numTasks
     val tasks = for {
       batch <- 0 until numTasks
-      (from, end) = if (batch == size - 1) (batch * size, width - 1) else (batch * size, (batch + 1) * size)
+      (from, end) = if (batch == numTasks - 1) (batch * size, width) else (batch * size, (batch + 1) * size)
       t = task(blur(src, dst, from, end, radius))
     } yield t
     tasks.foreach(_.join())

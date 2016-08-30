@@ -10,7 +10,7 @@ object HorizontalBoxBlurRunner {
     Key.exec.maxWarmupRuns -> 10,
     Key.exec.benchRuns -> 10,
     Key.verbose -> true
-  ) withWarmer(new Warmer.Default)
+  ) withWarmer (new Warmer.Default)
 
   def main(args: Array[String]): Unit = {
     val radius = 3
@@ -37,26 +37,37 @@ object HorizontalBoxBlurRunner {
 object HorizontalBoxBlur {
 
   /** Blurs the rows of the source image `src` into the destination image `dst`,
-   *  starting with `from` and ending with `end` (non-inclusive).
-   *
-   *  Within each row, `blur` traverses the pixels by going from left to right.
-   */
+    * starting with `from` and ending with `end` (non-inclusive).
+    *
+    * Within each row, `blur` traverses the pixels by going from left to right.
+    */
   def blur(src: Img, dst: Img, from: Int, end: Int, radius: Int): Unit = {
-  // TODO implement this method using the `boxBlurKernel` method
-
-  ???
+    // TODO implement this method using the `boxBlurKernel` method
+    for {
+      y <- from until end
+      x <- 0 until src.width
+      newPoint = boxBlurKernel(src, x, y, radius)
+    } {
+      dst.update(x, y, newPoint)
+    }
   }
 
   /** Blurs the rows of the source image in parallel using `numTasks` tasks.
-   *
-   *  Parallelization is done by stripping the source image `src` into
-   *  `numTasks` separate strips, where each strip is composed of some number of
-   *  rows.
-   */
+    *
+    * Parallelization is done by stripping the source image `src` into
+    * `numTasks` separate strips, where each strip is composed of some number of
+    * rows.
+    */
   def parBlur(src: Img, dst: Img, numTasks: Int, radius: Int): Unit = {
-  // TODO implement using the `task` construct and the `blur` method
-
-  ???
+    // TODO implement using the `task` construct and the `blur` method
+    val height = src.height
+    val size = height / numTasks
+    val tasks = for {
+      batch <- 0 until numTasks
+      (from, end) = if (batch == numTasks - 1) (batch * size, height) else (batch * size, (batch + 1) * size)
+      t = task(blur(src, dst, from, end, radius))
+    } yield t
+    tasks.foreach(_.join())
   }
 
 }
